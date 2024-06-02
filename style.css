@@ -1,0 +1,81 @@
+:root {
+	--bg: #161616;
+	--fg: #AAA;
+	--ac: #f5537e;
+	--dc: #ba4c83;
+	--bc: #8a3d73;
+}
+
+
+body {
+	background: var(--bg);
+	color: var(--fg);
+}
+
+a {
+	color: var(--ac);
+	text-decoration: none;
+}
+
+button {
+	padding: 8px;
+	min-width: 55px;
+	border-radius: 8px;
+	background: var(--ac);
+	color: var(--bg);
+	/* margin: 6px; */
+	border: none;
+}
+
+form {
+	width: 300px;
+	display: flex;
+	flex-direction: column;
+	padding: 6px;
+}
+
+input {
+	margin: 10px 0px;
+	border: none;
+	background: #262626;
+	border-radius: 8px;	
+	color: var(--fg);
+	/* font-weight: bold; */
+	padding: 8px;
+}
+
+.buttongroup {
+	width: 300px;
+	display: flex;
+	justify-content: stretch;
+	flex-direction: row;
+	align-items: center;
+}
+
+.buttongroup button {
+	flex: 1;
+}
+
+.buttongroup > button:first-child {
+	border-top-right-radius: 0px;
+	border-bottom-right-radius: 0px;
+	border-right: 2px solid var(--bc);
+}
+
+.buttongroup > button:last-child {
+	border-top-left-radius: 0px;
+	border-bottom-left-radius: 0px;
+}
+
+input:focus {
+	outline: var(--fg);
+	/* outline: none; */
+}
+
+button:active {
+	background: var(--bc);
+}
+
+button:hover {
+	background: var(--dc);
+}

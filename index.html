@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+
+	<!-- <link rel="stylesheet" href="style.css"> -->
+	<link rel="stylesheet"
+  	href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+	<script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
+</head>
+<body>
+
+	<main class="container" id="container">
+
+		<header>
+			<div class="group">
+			<h1>Jrnl</h1>
+			<button 
+				hx-post="/newPost"
+				hx-target="#container"
+				hx-swap="innerHTML"
+				>New Post</button>
+			</div>
+			<form>
+				<fieldset role="group">
+				<input type="search" placeholder="Search for journal entries">
+				</fieldset>
+				<small>accepts dates, keywords, tags, whatever</small>
+			</form>
+		</header>
+
+		{{range .}}
+			<article>
+				<header>
+					<h6>{{.Title}}</h6>
+					<small>22/12/25</small>
+				</header>
+
+				<p>{{.Post}}</p>
+				<footer>
+					<div class="group">
+						<div>
+						{{range $key, $value := .Tags}}
+						<small>#{{$value}}</small>
+						{{end}}
+						</div>
+							{{.Saved}}
+					</div>				
+				</footer>
+			</article>
+		{{end}}
+			<!-- <input type="text" placeholder="Add item"> -->
+			<!-- <textarea name="type here" id="type"></textarea> -->
+			<!-- <div role="group"> -->
+			<!-- 	<button>Add</button> -->
+			<!-- 	<button class="secondary">Remove</button> -->
+			<!-- </div> -->
+	</main>
+</body>
+</html>
