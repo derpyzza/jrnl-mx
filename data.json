@@ -1,28 +1,28 @@
 [
 	{
-		"Id": "0",
+		"Id": 0,
 		"Title": "Writing systems evolved from material limitations.",
 		"Date": "13.05.23",
 		"Tags": [
 			"Languages", 
 			"History"
 		],
-		"Saved": true,
-		"Post": "Various different writing systems and scripts are the way they are due to physical & material properties of writing materials that were available to the people of the time.\n\nSemitic languages like Hebrew and Arabic, for example, are written right to left. the reason being that the writers at that time stored their knowledge by carving it on bark, bones, and stones. the carvers held their chisels with their left hands, and struck them with their right, and so found it easier to see what they were writing if they wrote it right to left.\nSimilarly, South-Asian languages like Sanskrit, Telugu, Thai etc. are constructed of very loopy and curly letters. The reason being, that South-Asian people used to dry leaves and scratch their writing on the dry leaves. Sharp strokes on the delicate surface of those leaves usually ended up damaging the leaves, which, therefore necessitated and gave rise to softer curlier letters and scripts.\n\nThis kind of stuff is not something you'd generally think about normally, and it's something most would take for granted, but it is very fascinating to learn about."	
+		"Post": ["Various different writing systems and scripts are the way they are due to physical & material properties of writing materials that were available to the people of the time.",
+			"Semitic languages like Hebrew and Arabic, for example, are written right to left. the reason being that the writers at that time stored their knowledge by carving it on bark, bones, and stones. the carvers held their chisels with their left hands, and struck them with their right, and so found it easier to see what they were writing if they wrote it right to left.", "Similarly, South-Asian languages like Sanskrit, Telugu, Thai etc. are constructed of very loopy and curly letters. The reason being, that South-Asian people used to dry leaves and scratch their writing on the dry leaves. Sharp strokes on the delicate surface of those leaves usually ended up damaging the leaves, which, therefore necessitated and gave rise to softer curlier letters and scripts.","This kind of stuff is not something you'd generally think about normally, and it's something most would take for granted, but it is very fascinating to learn about."]	
 	},
 	{
-		"Id": "1",
+		"Id": 1,
 		"Title": "Post Two",
-		"Post": "Hello this is a post bleep"
+		"Post": ["Hello this is a post bleep"]
 	},
 	{
-		"Id": "2",
+		"Id": 2,
 		"Title": "Post Three",
-		"Post": "Hello this is a post"
+		"Post": ["Hello this is a post"]
 	},
 	{
-		"Id": "3",
+		"Id": 3,
 		"Title": "Post Four",
-		"Post": "Hello this is a post"
+		"Post": ["Hello this is a post"]
 	}
 ]

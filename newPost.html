@@ -1,0 +1,63 @@
+<header>
+	<div class="group">
+		<h1>Jrnl</h1>
+		<nav>
+			<ul>
+				<h4>Create new post</h4>
+			</ul>
+			<ul><li>
+				<button
+					hx-post="/"
+					hx-target="#container"
+					hx-swap="innerHTML"
+					>Go Back</button>
+			</li></ul>
+		</nav>
+	</div>
+</header>
+
+<div id="status">
+
+</div>
+
+<hr>
+
+<form 
+	hx-post="/createPost"
+	hx-target="#status"
+	hx-swap="innerHTML"
+	>
+	<fieldset role="group">
+		<input 
+			type="text" 
+			placeholder="Post title"
+			name="post-title"
+			id="post-title"
+			>
+		<input 
+			type="date"
+			name="post-date"
+			id="post-date"
+		>
+	</fieldset>
+	<label for="Post Body">Post Body</label>
+	<textarea 
+		id="post-body"
+		name="post-body"
+		>
+	</textarea>
+	<input 
+		type="text"
+		placeholder="Tags"
+		name="post-tags"
+		id="post-tags"
+		>
+	<small>Add a comma separated list of tags</small>
+	<button type="submit">Create Post</button>
+</form>
+
+<footer>
+	<article>
+		<small>made by derpyzza</small>
+	</article>
+</footer>

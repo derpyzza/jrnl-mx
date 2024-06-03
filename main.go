@@ -10,13 +10,11 @@ import (
 )
 
 type Post struct {
-	Id 			string 		`json:"id"`
+	Id 			int 		`json:"id"`
 	Title 	string		`json:"title"`
 	Date 		string		`json:"date"`
 	Tags 		[]string	`json:"tags"`
-	Post 		string		`json:"post"`
-
-	Saved 	bool			`json:"saved"`
+	Post 		[]string		`json:"post"`
 }
 
 func check(err error){}
@@ -44,20 +42,58 @@ func main() {
 	}
 
 	postHandler := func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `<p>Hello</p>
-<button
-	hx-post="/home"
-	hx-target="#container"
-	hx-swap="innerHTML"
-	>
-	Go Back
-</button>
-		`)
+		file, err := os.ReadFile("newPost.html")
+		check(err)
+		fmt.Fprintf(w, string(file))
+	}
+
+	createPostHandler := func(w http.ResponseWriter, r *http.Request) {
+
+		r.ParseForm()
+
+		form := r.Form
+		post := form["post-body"]
+		title := form["post-title"]
+		date := form["post-date"]
+		tags := form["post-tags"]
+
+		var err error
+		err = nil
+
+		// error check
+
+		posts = append(posts,
+			Post{
+				Id: len(posts) + 1,
+				Title: title[0],
+				Post: post,
+				Date: date[0],
+				Tags: tags,
+			},
+		)
+
+		fmt.Println("form: ", form)
+		fmt.Printf(
+			`title: %s 
+date: %s 
+tags: %s
+post: %s`,
+			title, date, tags, post)
+
+		if (err == nil) {
+		// no error
+			fmt.Fprintf(w,
+				"<button disabled class=\"outline\">Post Created Successfully</button>")
+		} else {
+		// error
+			fmt.Fprintf(w, "<button disabled class=\"outline pico-color-red-500\">Error Creating Post</button>")
+		}
+		
 	}
 
 	http.HandleFunc("/", mainHandler)
-	http.HandleFunc("/home", mainHandler)
 	http.HandleFunc("/newPost", postHandler)
+	http.HandleFunc("/createPost", createPostHandler)
 
 	log.Printf("Starting server at port %s", port)
 	log.Fatal(http.ListenAndServe(port, nil))

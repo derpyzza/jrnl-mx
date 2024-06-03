@@ -6,23 +6,28 @@
 	<title>Document</title>
 
 	<!-- <link rel="stylesheet" href="style.css"> -->
-	<link rel="stylesheet"
-  	href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+
 	<script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
 </head>
 <body>
-
 	<main class="container" id="container">
-
 		<header>
 			<div class="group">
-			<h1>Jrnl</h1>
-			<button 
-				hx-post="/newPost"
-				hx-target="#container"
-				hx-swap="innerHTML"
-				>New Post</button>
+			<nav>
+				<ul><h1>Jrnl</h1></ul>
+				<ul>
+					<li>
+					<button 
+						hx-post="/newPost"
+						hx-target="#container"
+						hx-swap="innerHTML"
+						>New Post</button>
+					</li>
+				</ul>
+			</nav>
 			</div>
+
 			<form>
 				<fieldset role="group">
 				<input type="search" placeholder="Search for journal entries">
@@ -38,7 +43,9 @@
 					<small>22/12/25</small>
 				</header>
 
-				<p>{{.Post}}</p>
+				{{range $post := .Post}}
+				<p>{{$post}}</p>
+				{{end}}
 				<footer>
 					<div class="group">
 						<div>
@@ -46,17 +53,15 @@
 						<small>#{{$value}}</small>
 						{{end}}
 						</div>
-							{{.Saved}}
 					</div>				
 				</footer>
 			</article>
 		{{end}}
-			<!-- <input type="text" placeholder="Add item"> -->
-			<!-- <textarea name="type here" id="type"></textarea> -->
-			<!-- <div role="group"> -->
-			<!-- 	<button>Add</button> -->
-			<!-- 	<button class="secondary">Remove</button> -->
-			<!-- </div> -->
+		<footer>
+			<article>
+				<small>made by derpyzza</small>
+			</article>
+		</footer>
 	</main>
 </body>
 </html>
