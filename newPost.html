@@ -6,11 +6,13 @@
 				<h4>Create new post</h4>
 			</ul>
 			<ul><li>
-				<button
+				<a
 					hx-post="/"
 					hx-target="#container"
 					hx-swap="innerHTML"
-					>Go Back</button>
+					hx-push-url="/"
+					hx-confirm="Are you sure? Any unsaved data will be lost..."
+					>Go Back</a>
 			</li></ul>
 		</nav>
 	</div>

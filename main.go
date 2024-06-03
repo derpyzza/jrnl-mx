@@ -4,10 +4,35 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
+	"sort"
+
+	"github.com/charmbracelet/log"
 )
+
+var postString = `
+		{{range .}}
+			<article>
+				<header>
+					<h6>{{.Title}}</h6>
+					<small>22/12/25</small>
+				</header>
+
+				{{range $post := .Post}}
+				<p>{{$post}}</p>
+				{{end}}
+				<footer>
+					<div class="group">
+						<div>
+						{{range $key, $value := .Tags}}
+						<small>#{{$value}}</small>
+						{{end}}
+						</div>
+					</div>				
+				</footer>
+			</article>
+		{{end}}`
 
 type Post struct {
 	Id 			int 		`json:"id"`
@@ -34,11 +59,18 @@ func main() {
 	}
 
 	mainHandler := func ( w http.ResponseWriter, r *http.Request ) {
+
+		if r.URL.Path != "/" {
+			log.Error("Unknown path", "path", r.URL.Path)
+			http.NotFound(w, r)
+			return
+		}
+
 		temp := template.Must(template.ParseFiles("index.html"))
 
 		temp.Execute(w, posts);
 
-		log.Printf("Request from %s", r.URL)
+		// log.Printf("Request from %s", r.URL)
 	}
 
 	postHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -72,13 +104,13 @@ func main() {
 			},
 		)
 
-		fmt.Println("form: ", form)
-		fmt.Printf(
-			`title: %s 
-date: %s 
-tags: %s
-post: %s`,
-			title, date, tags, post)
+// 		fmt.Println("form: ", form)
+// 		fmt.Printf(
+// 			`title: %s 
+// date: %s 
+// tags: %s
+// post: %s`,
+// 			title, date, tags, post)
 
 		if (err == nil) {
 		// no error
@@ -91,10 +123,50 @@ post: %s`,
 		
 	}
 
-	http.HandleFunc("/", mainHandler)
-	http.HandleFunc("/newPost", postHandler)
-	http.HandleFunc("/createPost", createPostHandler)
+	sortHandler := func(s bool, w http.ResponseWriter, r *http.Request) {
+		// s 	== sort recent
+		// !s == sort oldest	- It's stupid ik, but it saves space!
+		// In other words, s represents whether or not to sort the posts list
+		// or return the original list
+		log.Info("s: ", s)
 
-	log.Printf("Starting server at port %s", port)
-	log.Fatal(http.ListenAndServe(port, nil))
+		if (!s) {
+			// return list as it is
+			templ := template.Must(template.New("post").Parse(postString))
+			templ.Execute(w, posts)
+			// log.Print(posts)
+			return
+		}
+		// else sort list
+		sorted := posts
+
+		// sort list back to front
+		sort.Slice(sorted, func(i, j int) bool {
+			res := sorted[i].Id > sorted[j].Id
+			return res
+		})
+		// log.Print(sorted)
+		templ := template.Must(template.New("post").Parse(postString))
+		templ.Execute(w, sorted)
+		// log.Print(sorted)
+		return
+	}
+
+	mux := http.NewServeMux()
+
+	logger := func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			log.Info("Incoming request", "Method", r.Method, "url ", r.URL)
+			next.ServeHTTP(w, r)
+		}
+	}
+
+	mux.HandleFunc("/newPost/", logger(postHandler))
+	mux.HandleFunc("/createPost/", logger(createPostHandler))
+	mux.HandleFunc("/oldest/", logger(func (w http.ResponseWriter, r *http.Request){sortHandler(false, w, r)}))
+	mux.HandleFunc("/recent/", logger(func (w http.ResponseWriter, r *http.Request){sortHandler(true, w, r)}))
+	mux.HandleFunc("/", logger(mainHandler))
+
+	log.Printf("Starting server at port %s...", port)
+	log.Fatal(http.ListenAndServe(port, mux))
 }

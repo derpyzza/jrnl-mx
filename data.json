@@ -12,17 +12,20 @@
 	},
 	{
 		"Id": 1,
-		"Title": "Post Two",
-		"Post": ["Hello this is a post bleep"]
+		"Title": "Burgers",
+		"Date": "13.05.23",
+		"Tags": [
+			"Food"
+		],
+		"Post": ["Man, burgers are yummy"]
 	},
 	{
 		"Id": 2,
-		"Title": "Post Three",
-		"Post": ["Hello this is a post"]
-	},
-	{
-		"Id": 3,
-		"Title": "Post Four",
-		"Post": ["Hello this is a post"]
+		"Title": "This is a new and unique post title",
+		"Date": "13.05.23",
+		"Tags": [
+			"History"
+		],
+		"Post": ["Hello this is a post woooo"]
 	}
 ]

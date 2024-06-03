@@ -18,11 +18,31 @@
 				<ul><h1>Jrnl</h1></ul>
 				<ul>
 					<li>
-					<button 
-						hx-post="/newPost"
+						<details class="dropdown">
+							<summary>Sort</summary>
+							<ul>
+								<li>
+									<a 
+										hx-get="/oldest"
+										hx-target="#posts"
+										hx-swap="innerHTML"
+										>Oldest</a></li>
+								<li>
+									<a
+										hx-get="/recent"
+										hx-target="#posts"
+										hx-swap="innerHTML"
+										>Most recent</a></li>
+							</ul>
+						</details>
+					</li>
+					<li>
+					<a
+						hx-get="/newPost"
 						hx-target="#container"
+						hx-push-url="/newPost"
 						hx-swap="innerHTML"
-						>New Post</button>
+						>New Post</a>
 					</li>
 				</ul>
 			</nav>
@@ -32,10 +52,12 @@
 				<fieldset role="group">
 				<input type="search" placeholder="Search for journal entries">
 				</fieldset>
-				<small>accepts dates, keywords, tags, whatever</small>
+				<small>
+					accepts dates, keywords, tags, whatever</small>
 			</form>
 		</header>
 
+		<div id="posts">
 		{{range .}}
 			<article>
 				<header>
@@ -57,6 +79,8 @@
 				</footer>
 			</article>
 		{{end}}
+		</div>
+
 		<footer>
 			<article>
 				<small>made by derpyzza</small>
