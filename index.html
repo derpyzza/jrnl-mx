@@ -11,6 +11,11 @@
 	<script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
 </head>
 <body>
+	<style>
+		:root {
+    --pico-border-radius: 10px;
+		}
+	</style>
 	<main class="container" id="container">
 		<header>
 			<div class="group">
@@ -23,13 +28,13 @@
 							<ul>
 								<li>
 									<a 
-										hx-get="/oldest"
+										hx-get="/sort?recent=false"
 										hx-target="#posts"
 										hx-swap="innerHTML"
 										>Oldest</a></li>
 								<li>
 									<a
-										hx-get="/recent"
+										hx-get="/sort?recent=true"
 										hx-target="#posts"
 										hx-swap="innerHTML"
 										>Most recent</a></li>

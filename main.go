@@ -12,27 +12,27 @@ import (
 )
 
 var postString = `
-		{{range .}}
-			<article>
-				<header>
-					<h6>{{.Title}}</h6>
-					<small>22/12/25</small>
-				</header>
+{{range .}}
+<article>
+<header>
+	<h6>{{.Title}}</h6>
+	<small>22/12/25</small>
+</header>
 
-				{{range $post := .Post}}
-				<p>{{$post}}</p>
-				{{end}}
-				<footer>
-					<div class="group">
-						<div>
-						{{range $key, $value := .Tags}}
-						<small>#{{$value}}</small>
-						{{end}}
-						</div>
-					</div>				
-				</footer>
-			</article>
-		{{end}}`
+{{range $post := .Post}}
+<p>{{$post}}</p>
+{{end}}
+<footer>
+	<div class="group">
+		<div>
+		{{range $key, $value := .Tags}}
+		<small>#{{$value}}</small>
+		{{end}}
+		</div>
+	</div>				
+</footer>
+</article>
+{{end}}`
 
 type Post struct {
 	Id 			int 		`json:"id"`
@@ -42,14 +42,16 @@ type Post struct {
 	Post 		[]string		`json:"post"`
 }
 
+var posts []Post
+
 func check(err error){}
 
 func main() {
 
-	var posts []Post
-
 	port := ":5050"
 	dbfile := "data.json"
+
+	log.SetLevel(log.DebugLevel)
 
 	file, err := os.ReadFile(dbfile)
 	check(err)
@@ -58,72 +60,108 @@ func main() {
 		panic(err)
 	}
 
-	mainHandler := func ( w http.ResponseWriter, r *http.Request ) {
-
-		if r.URL.Path != "/" {
-			log.Error("Unknown path", "path", r.URL.Path)
-			http.NotFound(w, r)
-			return
-		}
-
-		temp := template.Must(template.ParseFiles("index.html"))
-
-		temp.Execute(w, posts);
-
-		// log.Printf("Request from %s", r.URL)
-	}
-
 	postHandler := func(w http.ResponseWriter, r *http.Request) {
 		file, err := os.ReadFile("newPost.html")
 		check(err)
 		fmt.Fprintf(w, string(file))
 	}
 
-	createPostHandler := func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
 
-		r.ParseForm()
-
-		form := r.Form
-		post := form["post-body"]
-		title := form["post-title"]
-		date := form["post-date"]
-		tags := form["post-tags"]
-
-		var err error
-		err = nil
-
-		// error check
-
-		posts = append(posts,
-			Post{
-				Id: len(posts) + 1,
-				Title: title[0],
-				Post: post,
-				Date: date[0],
-				Tags: tags,
-			},
-		)
-
-// 		fmt.Println("form: ", form)
-// 		fmt.Printf(
-// 			`title: %s 
-// date: %s 
-// tags: %s
-// post: %s`,
-// 			title, date, tags, post)
-
-		if (err == nil) {
-		// no error
-			fmt.Fprintf(w,
-				"<button disabled class=\"outline\">Post Created Successfully</button>")
-		} else {
-		// error
-			fmt.Fprintf(w, "<button disabled class=\"outline pico-color-red-500\">Error Creating Post</button>")
+	// logger middleware
+	logger := func(handler string, next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			log.Info("Incoming request", "Handler", handler, "Method", r.Method, "URL", r.URL)
+			next.ServeHTTP(w, r)
 		}
-		
 	}
 
-	sortHandler := func(s bool, w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", logger("/", mainHandler))
+	mux.HandleFunc("/newPost/", logger("/newPost/", postHandler))
+	mux.HandleFunc("/createPost/", logger("/createPost/", createPostHandler))
+	mux.HandleFunc("/oldest/", logger("/oldest/",
+		func (w http.ResponseWriter, r *http.Request){sortHandler(false, w, r)}))
+	mux.HandleFunc("/recent/", logger("/recent/",
+		func (w http.ResponseWriter, r *http.Request){sortHandler(true, w, r)}))
+	mux.HandleFunc("/sort", logger("/sort", ssortHandler))
+
+	log.Printf("Starting server at port %s...", port)
+	log.Fatal(http.ListenAndServe(port, mux))
+}
+
+func ssortHandler( w http.ResponseWriter, r *http.Request ) {
+	query := r.URL.Query().Get("recent")
+	log.Debug("hiiiit")
+	if (query == "true"){
+		sorted := make([]Post, len(posts))
+		copy(sorted, posts)
+		// sort list back to front
+		sort.Slice(sorted, func(i, j int) bool {
+			res := sorted[i].Id > sorted[j].Id
+			return res
+		})
+		templ := template.Must(template.New("post").Parse(postString))
+		templ.Execute(w, sorted)
+		return
+	} else if (query == "false") {
+		
+		log.Debug("oldest sorting\n")
+		
+		templ := template.Must(template.New("post").Parse(postString))
+		templ.Execute(w, posts)
+		return
+	} else {
+		fmt.Fprintf(w, "unknown query")
+	}
+}
+
+func createPostHandler (w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	form := r.Form
+	post := form["post-body"]
+	title := form["post-title"]
+	date := form["post-date"]
+	tags := form["post-tags"]
+
+	var err error
+	err = nil
+
+	// error check
+
+	posts = append(posts,
+		Post{
+			Id: len(posts) + 1,
+			Title: title[0],
+			Post: post,
+			Date: date[0],
+			Tags: tags,
+		},
+	)
+	if (err == nil) {
+	// no error
+		fmt.Fprintf(w,
+			"<button disabled class=\"outline\">Post Created Successfully</button>")
+	} else {
+	// error
+		fmt.Fprintf(w, "<button disabled class=\"outline pico-color-red-500\">Error Creating Post</button>")
+	}
+}	
+
+func mainHandler ( w http.ResponseWriter, r *http.Request ) {
+
+	if r.URL.Path != "/" {
+		log.Error("Unknown path", "path", r.URL.Path)
+		http.NotFound(w, r)
+		return
+	}
+
+	temp := template.Must(template.ParseFiles("index.html"))
+
+	temp.Execute(w, posts);
+}
+
+func sortHandler (s bool, w http.ResponseWriter, r *http.Request) {
 		// s 	== sort recent
 		// !s == sort oldest	- It's stupid ik, but it saves space!
 		// In other words, s represents whether or not to sort the posts list
@@ -151,22 +189,3 @@ func main() {
 		// log.Print(sorted)
 		return
 	}
-
-	mux := http.NewServeMux()
-
-	logger := func(next http.HandlerFunc) http.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request) {
-			log.Info("Incoming request", "Method", r.Method, "url ", r.URL)
-			next.ServeHTTP(w, r)
-		}
-	}
-
-	mux.HandleFunc("/newPost/", logger(postHandler))
-	mux.HandleFunc("/createPost/", logger(createPostHandler))
-	mux.HandleFunc("/oldest/", logger(func (w http.ResponseWriter, r *http.Request){sortHandler(false, w, r)}))
-	mux.HandleFunc("/recent/", logger(func (w http.ResponseWriter, r *http.Request){sortHandler(true, w, r)}))
-	mux.HandleFunc("/", logger(mainHandler))
-
-	log.Printf("Starting server at port %s...", port)
-	log.Fatal(http.ListenAndServe(port, mux))
-}
