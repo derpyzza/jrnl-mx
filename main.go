@@ -1,13 +1,18 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
 	"os"
+	"os/signal"
 	"sort"
 	"strings"
+	"syscall"
+	"time"
+	"errors"
 
 	"github.com/charmbracelet/log"
 )
@@ -61,6 +66,12 @@ func main() {
 
 	port := ":5050"
 	dbfile := "data.json"
+	mux := http.NewServeMux()
+
+	server := http.Server {
+		Addr: port,
+		Handler: mux,
+	}
 
 	log.SetLevel(log.DebugLevel)
 
@@ -77,8 +88,6 @@ func main() {
 		fmt.Fprintf(w, string(file))
 	}
 
-	mux := http.NewServeMux()
-
 	// logger middleware
 	logger := func(handler string, next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -93,8 +102,35 @@ func main() {
 	mux.HandleFunc("/sort", logger("/sort", sortHandler))
 	mux.HandleFunc("/tags", logger("/tags", tagHandler))
 
-	log.Printf("Starting server at port %s...", port)
-	log.Fatal(http.ListenAndServe(port, mux))
+	//== MAGIC CODE==
+	// magic server shutdown code. idk how this works.
+	go func () {
+		log.Printf("Starting server at port %s...", port)
+		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("HTTP server error: %v", err)
+		}
+	}()
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan
+
+	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutdownRelease()
+
+	log.Info("Shutting down server...")
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Fatalf("HTTP Shutdown error: %v", err)
+		server.Close()
+	}
+	//== MAGIC CODE==
+
+	b, err := json.Marshal(posts)
+	f, err := os.Create(dbfile)
+	defer f.Close()
+
+	fmt.Fprintf(f, string(b))
+	log.Debug("this code is reached")
 }
 
 func sortHandler( w http.ResponseWriter, r *http.Request ) {
