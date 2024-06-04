@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/charmbracelet/log"
 )
@@ -26,13 +27,23 @@ var postString = `
 	<div class="group">
 		<div>
 		{{range $key, $value := .Tags}}
-		<small>#{{$value}}</small>
+			<small>
+				<a 
+					hx-get="/tags?tag={{$value}}"
+					hx-target="#posts"
+					hx-swap="innerHTML"
+					hx-push-url="/tags?tag={{$value}}"
+					>
+					#{{$value}}</a></small>
 		{{end}}
 		</div>
 	</div>				
 </footer>
 </article>
 {{end}}`
+
+
+var postTempl = template.Must(template.New("post").Parse(postString))
 
 type Post struct {
 	Id 			int 		`json:"id"`
@@ -79,17 +90,14 @@ func main() {
 	mux.HandleFunc("/", logger("/", mainHandler))
 	mux.HandleFunc("/newPost/", logger("/newPost/", postHandler))
 	mux.HandleFunc("/createPost/", logger("/createPost/", createPostHandler))
-	mux.HandleFunc("/oldest/", logger("/oldest/",
-		func (w http.ResponseWriter, r *http.Request){sortHandler(false, w, r)}))
-	mux.HandleFunc("/recent/", logger("/recent/",
-		func (w http.ResponseWriter, r *http.Request){sortHandler(true, w, r)}))
-	mux.HandleFunc("/sort", logger("/sort", ssortHandler))
+	mux.HandleFunc("/sort", logger("/sort", sortHandler))
+	mux.HandleFunc("/tags", logger("/tags", tagHandler))
 
 	log.Printf("Starting server at port %s...", port)
 	log.Fatal(http.ListenAndServe(port, mux))
 }
 
-func ssortHandler( w http.ResponseWriter, r *http.Request ) {
+func sortHandler( w http.ResponseWriter, r *http.Request ) {
 	query := r.URL.Query().Get("recent")
 	log.Debug("hiiiit")
 	if (query == "true"){
@@ -100,19 +108,37 @@ func ssortHandler( w http.ResponseWriter, r *http.Request ) {
 			res := sorted[i].Id > sorted[j].Id
 			return res
 		})
-		templ := template.Must(template.New("post").Parse(postString))
-		templ.Execute(w, sorted)
+		postTempl.Execute(w, sorted)
 		return
 	} else if (query == "false") {
 		
 		log.Debug("oldest sorting\n")
 		
-		templ := template.Must(template.New("post").Parse(postString))
-		templ.Execute(w, posts)
+		postTempl.Execute(w, posts)
 		return
 	} else {
 		fmt.Fprintf(w, "unknown query")
 	}
+}
+
+func tagHandler (w http.ResponseWriter, r *http.Request ) {
+	tag := r.URL.Query().Get("tag")
+	var vposts []Post
+
+	for _, post := range posts {
+		for _, t := range post.Tags {
+			if t == tag {
+				vposts = append(vposts, post)
+			}
+		}
+	}
+
+	if len(vposts) >= 1 {
+		postTempl.Execute(w, vposts);
+		return
+	}
+
+	fmt.Fprintf(w, "no tags found :/")
 }
 
 func createPostHandler (w http.ResponseWriter, r *http.Request) {
@@ -128,6 +154,11 @@ func createPostHandler (w http.ResponseWriter, r *http.Request) {
 	err = nil
 
 	// error check
+	log.Debug(form)
+	log.Debug(tags)
+	for index, tag := range tags {
+		tags[index] = strings.ToLower(tag)	
+	}
 
 	posts = append(posts,
 		Post{
@@ -160,32 +191,3 @@ func mainHandler ( w http.ResponseWriter, r *http.Request ) {
 
 	temp.Execute(w, posts);
 }
-
-func sortHandler (s bool, w http.ResponseWriter, r *http.Request) {
-		// s 	== sort recent
-		// !s == sort oldest	- It's stupid ik, but it saves space!
-		// In other words, s represents whether or not to sort the posts list
-		// or return the original list
-		log.Info("s: ", s)
-
-		if (!s) {
-			// return list as it is
-			templ := template.Must(template.New("post").Parse(postString))
-			templ.Execute(w, posts)
-			// log.Print(posts)
-			return
-		}
-		// else sort list
-		sorted := posts
-
-		// sort list back to front
-		sort.Slice(sorted, func(i, j int) bool {
-			res := sorted[i].Id > sorted[j].Id
-			return res
-		})
-		// log.Print(sorted)
-		templ := template.Must(template.New("post").Parse(postString))
-		templ.Execute(w, sorted)
-		// log.Print(sorted)
-		return
-	}

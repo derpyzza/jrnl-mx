@@ -20,7 +20,13 @@
 		<header>
 			<div class="group">
 			<nav>
-				<ul><h1>Jrnl</h1></ul>
+				<ul>
+					<h1
+						hx-get="/"
+						hx-target="#container"
+						hx-swap="innerHTML"
+						hx-push-url="/"
+						>Jrnl</h1></ul>
 				<ul>
 					<li>
 						<details class="dropdown">
@@ -52,14 +58,6 @@
 				</ul>
 			</nav>
 			</div>
-
-			<form>
-				<fieldset role="group">
-				<input type="search" placeholder="Search for journal entries">
-				</fieldset>
-				<small>
-					accepts dates, keywords, tags, whatever</small>
-			</form>
 		</header>
 
 		<div id="posts">
@@ -77,7 +75,14 @@
 					<div class="group">
 						<div>
 						{{range $key, $value := .Tags}}
-						<small>#{{$value}}</small>
+						<small>
+							<a 
+								hx-get="/tags?tag={{$value}}"
+								hx-target="#posts"
+								hx-swap="innerHTML"
+								hx-push-url="/tags?tag={{$value}}"
+								>
+								#{{$value}}</a></small>
 						{{end}}
 						</div>
 					</div>				
