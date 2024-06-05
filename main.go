@@ -60,6 +60,7 @@ type Post struct {
 
 var posts []Post
 
+// TODO: fill this out sometime 
 func check(err error){}
 
 func main() {
@@ -190,9 +191,9 @@ func createPostHandler (w http.ResponseWriter, r *http.Request) {
 	var err error
 	err = nil
 
-	// error check
 	log.Debug(form)
 	log.Debug(tags)
+	// convert tags to lowercase for consistency
 	for index, tag := range tags {
 		tags[index] = strings.ToLower(tag)	
 	}
@@ -206,6 +207,7 @@ func createPostHandler (w http.ResponseWriter, r *http.Request) {
 			Tags: tags,
 		},
 	)
+
 	if (err == nil) {
 	// no error
 		fmt.Fprintf(w,
