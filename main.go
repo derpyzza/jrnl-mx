@@ -85,6 +85,7 @@ func main() {
 	postHandler := func(w http.ResponseWriter, r *http.Request) {
 		file, err := os.ReadFile("newPost.html")
 		check(err)
+		w.Header().Add("Content-Type", "text/html")
 		fmt.Fprintf(w, string(file))
 	}
 
@@ -105,7 +106,7 @@ func main() {
 	//== MAGIC CODE==
 	// magic server shutdown code. idk how this works.
 	go func () {
-		log.Printf("Starting server at port %s...", port)
+		log.Info("Starting server", "port", port)
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("HTTP server error: %v", err)
 		}
@@ -219,7 +220,9 @@ func mainHandler ( w http.ResponseWriter, r *http.Request ) {
 
 	if r.URL.Path != "/" {
 		log.Error("Unknown path", "path", r.URL.Path)
-		http.NotFound(w, r)
+		errortemp := template.Must(template.ParseFiles("error.html"))
+
+		errortemp.Execute(w, r.URL);
 		return
 	}
 
